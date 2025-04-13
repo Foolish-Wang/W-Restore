@@ -12,6 +12,10 @@ A modern e-commerce platform built with ASP.NET Core and React, featuring produc
 - **Styling**: Material-UI components
 - **AI Integration**: DeepSeek AI for intelligent product recommendations and chat assistance
 
+## Architecture
+![Restore](https://github.com/user-attachments/assets/13523403-b53b-4db4-9567-b8d694e9415b)
+
+
 ## Getting Started
 
 Follow these steps to set up and run the project locally:
