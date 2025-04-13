@@ -20,17 +20,17 @@ import agent from '../../app/api/agent';
 export default function ChatWidget() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>(
     [
-      {
-        role: 'system',
-        content:
-          'You are a helpful shopping assistant for our e-commerce store Restore. ' +
-          'You can recommend products from our catalog, answer questions about our items, ' +
-          'help with sizing, and provide other shopping advice. Our store specializes in ' +
-          'boards (Angular, React, TypeScript), boots, gloves, and other related products. ' +
-          'Be friendly, helpful, and concise. When recommending products, refer to specific ' +
-          "products in our catalog by name when possible. If you don't know something specific " +
-          'about our products, you can suggest categories to browse instead of making up product details.',
-      },
+      //   {
+      //     role: 'system',
+      //     content:
+      //       'You are a helpful shopping assistant for our e-commerce store Restore. ' +
+      //       'You can recommend products from our catalog, answer questions about our items, ' +
+      //       'help with sizing, and provide other shopping advice. Our store specializes in ' +
+      //       'boards (Angular, React, TypeScript), boots, gloves, and other related products. ' +
+      //       'Be friendly, helpful, and concise. When recommending products, refer to specific ' +
+      //       "products in our catalog by name when possible. If you don't know something specific " +
+      //       'about our products, you can suggest categories to browse instead of making up product details.',
+      //   },
       {
         role: 'assistant',
         content:
