@@ -79,28 +79,30 @@ cd API
 dotnet ef database update
 ```
 
-### 5. Run the API
+### 5. Install Dependencies
 
-Start the backend API:
-
-```bash
-cd API
-dotnet run
-```
-
-The API will be available at http://localhost:5000.
-
-### 6. Run the React Frontend
-
-Open a new terminal window and start the frontend:
+Install project dependencies for both API and client:
 
 ```bash
+# Navigate to client directory and install dependencies
 cd client
 npm install
-npm run dev
+cd ..
 ```
 
-The frontend will be available at http://localhost:3000.
+### 6. Run the Application
+
+The project is configured to use concurrently to start both the API and client with a single command:
+
+```bash
+# From the root directory
+npm start
+```
+
+This will start:
+
+- The API at http://localhost:5000
+- The React frontend at http://localhost:3000
 
 ## Features
 
