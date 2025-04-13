@@ -10,8 +10,9 @@ import {
   Avatar,
   List,
   ListItem,
+  InputAdornment,
 } from '@mui/material';
-import { Send, Close, SmartToy } from '@mui/icons-material';
+import { Send, Close, SmartToy, DragHandle } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 import agent from '../../app/api/agent';
 
@@ -26,7 +27,7 @@ const stripMarkdown = (markdown: string): string => {
   text = text.replace(/\*\*(.*?)\*\*/g, '$1');
 
   // 移除斜体标记 (*text*)
-  text = text.replace(/\*(.*?)\*/g, '$1');
+  text = text.replace(/\*(.*?)\*\*/g, '$1');
 
   // 移除链接标记 [text](url)
   text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1');
@@ -59,15 +60,72 @@ export default function ChatWidget() {
     ]
   );
   const [open, setOpen] = useState(false);
-
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+  // 添加宽度状态和拖拽功能相关状态
+  const [drawerWidth, setDrawerWidth] = useState(400); // 增加默认宽度为400
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [dragStartWidth, setDragStartWidth] = useState(0);
+
+  // 处理拖拽开始
+  const handleDragStart = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+    setDragStartWidth(drawerWidth);
+
+    // 防止文本选择
+    document.body.style.userSelect = 'none';
+
+    // 添加全局鼠标事件监听
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('mouseup', handleDragEnd);
+  };
+
+  // 处理拖拽移动
+  const handleDragMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+
+    // 计算新宽度 (从右向左拖动时是负值)
+    const diff = dragStartX - e.clientX;
+    const newWidth = Math.max(320, Math.min(800, dragStartWidth + diff));
+
+    setDrawerWidth(newWidth);
+  };
+
+  // 处理拖拽结束
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    document.body.style.userSelect = '';
+
+    // 移除全局事件监听
+    document.removeEventListener('mousemove', handleDragMove);
+    document.removeEventListener('mouseup', handleDragEnd);
+  };
+
+  // 确保组件卸载时清除事件监听
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [isDragging]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // 修改输入处理函数，增加字符限制
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 限制最大字符数为100
+    const value = e.target.value;
+    if (value.length <= 100) {
+      setInput(value);
+    }
+  };
 
   const handleSend = async () => {
     if (input.trim() === '') return;
@@ -118,16 +176,51 @@ export default function ChatWidget() {
         <SmartToy />
       </Fab>
 
-      {/* Chat drawer */}
-      <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
+      {/* Chat drawer with resizable width */}
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={() => setOpen(false)}
+        PaperProps={{
+          sx: { width: `${drawerWidth}px` },
+        }}
+      >
         <Box
           sx={{
-            width: 320,
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
+            position: 'relative',
           }}
         >
+          {/* 添加左侧拖拽把手 */}
+          <Box
+            sx={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '12px',
+              cursor: 'ew-resize',
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.04)',
+              },
+            }}
+            onMouseDown={handleDragStart}
+          >
+            <DragHandle
+              sx={{
+                color: 'action.disabled',
+                transform: 'rotate(90deg)',
+                fontSize: 16,
+              }}
+            />
+          </Box>
+
           {/* Header */}
           <Box
             sx={{
@@ -272,19 +365,47 @@ export default function ChatWidget() {
             </List>
           </Box>
 
-          {/* Input */}
+          {/* 优化输入框：多行自适应高度并显示字符计数 */}
           <Box
             sx={{ p: 2, borderTop: 1, borderColor: 'divider', display: 'flex' }}
           >
             <TextField
               fullWidth
-              placeholder="Type a message..."
+              multiline
+              maxRows={4}
+              placeholder="Type a message... (max 100 characters)"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              onChange={handleInputChange}
+              onKeyPress={(e) =>
+                e.key === 'Enter' && !e.shiftKey && handleSend()
+              }
               disabled={loading}
+              inputProps={{ maxLength: 100 }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" sx={{ alignSelf: 'flex-end' }}>
+                    <Typography
+                      variant="caption"
+                      color={input.length >= 90 ? 'error' : 'text.secondary'}
+                      sx={{ mr: 1 }}
+                    >
+                      {input.length}/100
+                    </Typography>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  alignItems: 'flex-end',
+                },
+              }}
             />
-            <IconButton color="primary" onClick={handleSend} disabled={loading}>
+            <IconButton
+              color="primary"
+              onClick={handleSend}
+              disabled={loading}
+              sx={{ alignSelf: 'flex-end' }}
+            >
               <Send />
             </IconButton>
           </Box>
