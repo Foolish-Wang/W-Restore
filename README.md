@@ -10,6 +10,7 @@ A modern e-commerce platform built with ASP.NET Core and React, featuring produc
 - **Authentication**: JWT-based authentication
 - **Payment Processing**: Stripe integration
 - **Styling**: Material-UI components
+- **AI Integration**: DeepSeek AI for intelligent product recommendations and chat assistance
 
 ## Getting Started
 
@@ -59,6 +60,7 @@ dotnet user-secrets init
 dotnet user-secrets set "JWTSettings:TokenKey" "your_secure_key_at_least_32_chars_long"
 dotnet user-secrets set "StripeSettings:SecretKey" "your_stripe_secret_key"
 dotnet user-secrets set "StripeSettings:WhSecret" "your_stripe_webhook_secret"
+dotnet user-secrets set "DeepSeekAI:ApiKey" "your_deepseek_ai_api_key"
 
 # Verify secrets
 dotnet user-secrets list
